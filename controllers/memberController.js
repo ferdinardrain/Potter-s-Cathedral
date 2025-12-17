@@ -1,0 +1,72 @@
+const memberService = require('../services/memberService');
+
+class MemberController {
+  static async getAllMembers(req, res) {
+    try {
+      const { search, maritalStatus } = req.query;
+      const filters = {};
+      if (search) filters.search = search;
+      if (maritalStatus) filters.maritalStatus = maritalStatus;
+
+      const members = await memberService.getAllMembers(filters);
+      res.json({ data: members });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async getMemberById(req, res) {
+    try {
+      const { id } = req.params;
+      const member = await memberService.getMemberById(id);
+      res.json({ data: member });
+    } catch (error) {
+      if (error.message === 'Member not found') {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: error.message });
+      }
+    }
+  }
+
+  static async createMember(req, res) {
+    try {
+      const memberData = req.body;
+      const newMember = await memberService.createMember(memberData);
+      res.status(201).json({ data: newMember });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async updateMember(req, res) {
+    try {
+      const { id } = req.params;
+      const memberData = req.body;
+      const updatedMember = await memberService.updateMember(id, memberData);
+      if (!updatedMember) {
+        res.status(404).json({ error: 'Member not found' });
+      } else {
+        res.json({ data: updatedMember });
+      }
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  static async deleteMember(req, res) {
+    try {
+      const { id } = req.params;
+      const deleted = await memberService.deleteMember(id);
+      if (!deleted) {
+        res.status(404).json({ error: 'Member not found' });
+      } else {
+        res.json({ message: 'Member deleted successfully' });
+      }
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+}
+
+module.exports = MemberController;
